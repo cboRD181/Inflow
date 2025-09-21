@@ -1,8 +1,8 @@
-# Inflow: Frictionless LLM (Chrome MV3)
+# Inflow: A Chrome Extension for invoking an LLM with your context without breaking flow
 
-Fires up an on-page chat panel when you start typing natural-language while no input is focused. It seeds the chat with your typed text and includes domain, page title, and visible viewport text as implicit context.
+Begin typing your question to open a chat with your current viewport as context, no hotkeys or buttons needed
 
-![demo](https://github.com/user-attachments/assets/bca3428e-5784-4630-9e66-6b2a0c6a836e)
+<video src="demo.mp4" muted autoplay controls loop></video>
 
 
 ## Install (Developer Mode)
