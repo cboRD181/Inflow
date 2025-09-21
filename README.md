@@ -2,7 +2,7 @@
 
 Begin typing your question to open a chat with your current viewport as context, no hotkeys or buttons needed
 
-<video src="[demo.mp4](https://i.imgur.com/qe2QnRm.mp4)" muted autoplay controls loop></video>
+https://i.imgur.com/qe2QnRm.mp4
 
 
 ## Install (Developer Mode)
