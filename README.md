@@ -2,8 +2,7 @@
 
 Begin typing your question to open a chat with your current viewport as context, no hotkeys or buttons needed
 
-https://i.imgur.com/qe2QnRm.mp4
-
+https://github.com/user-attachments/assets/3f8fd7e0-592b-43c6-84db-ad1651b11e5d
 
 ## Install (Developer Mode)
 
