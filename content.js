@@ -768,7 +768,8 @@ function getEffectiveBackgroundColor(element) {
         }
 
         isTyping = true;
-        finalBotText += characterBuffer.splice(0, characterBuffer.length).join('');
+        const charsToType = Math.min(characterBuffer.length, Math.floor(Math.random() * 3) + 2);
+        finalBotText += characterBuffer.splice(0, charsToType).join('');
         
         if (botEl) {
           const shouldScroll = isNearBottom();
@@ -776,7 +777,7 @@ function getEffectiveBackgroundColor(element) {
           if (shouldScroll) smoothScrollToBottom();
         }
         
-        setTimeout(typeCharacters, 40);
+        setTimeout(typeCharacters, 25);
       }
 
       function appendLoadingMessage() {
