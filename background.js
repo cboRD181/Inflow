@@ -1,9 +1,11 @@
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'streamCompletion') {
-    // This is a fire-and-forget message for the old implementation.
-    // The new implementation will use chrome.runtime.connect, so we can
-    // leave this listener here for now, but it won't be used for streaming.
-    return true;
+  if (request.action === 'get_commands') {
+    chrome.commands.getAll((commands) => {
+      sendResponse(commands);
+    });
+    return true; // Indicates that the response is sent asynchronously
+  } else if (request.action === 'open_shortcut_page') {
+    chrome.tabs.create({ url: 'chrome://extensions/shortcuts' });
   }
 });
 
@@ -69,5 +71,15 @@ async function streamCompletion(apiUrl, model, messages, apiKey, provider, port)
 chrome.action.onClicked.addListener((tab) => {
   if (tab.id) {
     chrome.tabs.sendMessage(tab.id, { action: "coflow_toggle_options" });
+  }
+});
+
+chrome.commands.onCommand.addListener((command, tab) => {
+  if (command === 'invoke-inflow' && tab.id) {
+    chrome.storage.local.get(['invocation_method'], (result) => {
+      const invocationMethod = result.invocation_method || 'typing-or-hotkey';
+      if (invocationMethod === 'typing') return;
+      chrome.tabs.sendMessage(tab.id, { action: "coflow_invoke_panel" });
+    });
   }
 });

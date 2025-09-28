@@ -267,6 +267,12 @@ function getEffectiveBackgroundColor(element) {
       .position-option { flex: 1; padding: 6px 8px; text-align: center; cursor: pointer; user-select: none; font-size: 12px; }
       .position-option:first-child { border-right: 1px solid var(--border-color); }
       .position-option.active { background: #0A2540; color: white; }
+      .help-tooltip { display: inline-block; background: var(--border-color); color: var(--input-text-color); border-radius: 50%; width: 14px; height: 14px; text-align: center; font-size: 10px; line-height: 14px; cursor: help; margin-left: 4px; }
+      .invoke-switch { display: flex; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; margin-top: 4px; }
+      .invoke-option { flex: 1; padding: 6px 8px; text-align: center; cursor: pointer; user-select: none; font-size: 12px; }
+      .invoke-option:first-child { border-right: 1px solid var(--border-color); }
+      .invoke-option.active { background: #0A2540; color: white; }
+      .link-button { background: none; border: none; color: var(--input-text-color); text-decoration: underline; cursor: pointer; padding: 0; font-size: 11px; opacity: 0.8; margin-top: 4px; }
     `;
 
     const wrapper = document.createElement('div');
@@ -305,6 +311,14 @@ function getEffectiveBackgroundColor(element) {
       <input id="model" type="text" placeholder="openai/gpt-4o-mini" />
       <div class="note">Leave blank to use default.</div>
 
+      <label>Invoke Method<span class="help-tooltip" title="To invoke, just start typing anywhere on the page. Inflow gets your current viewport's text as context. You can also use the hotkey.">?</span></label>
+      <div class="invoke-switch">
+        <div class="invoke-option" data-value="typing-or-hotkey">Typing or Hotkey</div>
+        <div class="invoke-option" data-value="hotkey">Hotkey Only</div>
+      </div>
+      <div class="note" id="hotkey-display" style="margin-top: 4px; display: none;"></div>
+      <button id="change-hotkey" class="link-button" style="display: none;">Change Hotkey</button>
+
       <label>Chat Window Position</label>
       <div class="position-switch">
         <div class="position-option" data-value="bottom-right">Bottom Right</div>
@@ -327,6 +341,7 @@ function getEffectiveBackgroundColor(element) {
     const baseUrlEl = () => optionsRoot.getElementById('baseUrl');
     const customProviderOptionsEl = () => optionsRoot.getElementById('custom-provider-options');
     const positionOptions = optionsRoot.querySelectorAll('.position-option');
+    const invokeOptions = optionsRoot.querySelectorAll('.invoke-option');
     const keyPreviewEl = () => optionsRoot.getElementById('key-preview');
 
     apiKeyEl().addEventListener('input', (e) => {
@@ -340,6 +355,13 @@ function getEffectiveBackgroundColor(element) {
     positionOptions.forEach(option => {
       option.addEventListener('click', () => {
         positionOptions.forEach(opt => opt.classList.remove('active'));
+        option.classList.add('active');
+      });
+    });
+
+    invokeOptions.forEach(option => {
+      option.addEventListener('click', () => {
+        invokeOptions.forEach(opt => opt.classList.remove('active'));
         option.classList.add('active');
       });
     });
@@ -373,7 +395,7 @@ function getEffectiveBackgroundColor(element) {
     }
 
     function initialLoad() {
-      chrome.storage.local.get(['api_provider', 'api_keys', 'api_models', 'api_base_url', 'chat_window_position'], (result) => {
+      chrome.storage.local.get(['api_provider', 'api_keys', 'api_models', 'api_base_url', 'chat_window_position', 'invocation_method'], (result) => {
         const provider = result.api_provider || 'openrouter';
         providerEl().value = provider;
         
@@ -382,9 +404,29 @@ function getEffectiveBackgroundColor(element) {
         positionOptions.forEach(el => {
           el.classList.toggle('active', el.dataset.value === position);
         });
+
+        const invocation = result.invocation_method || 'typing-or-hotkey';
+        invokeOptions.forEach(el => {
+          el.classList.toggle('active', el.dataset.value === invocation);
+        });
         
         setProviderSpecificFields(provider, result);
         handleProviderChange();
+      });
+
+      chrome.runtime.sendMessage({ action: 'get_commands' }, (commands) => {
+        const invokeCommand = commands.find(c => c.name === 'invoke-inflow');
+        if (invokeCommand && invokeCommand.shortcut) {
+          const hotkeyDisplay = optionsRoot.getElementById('hotkey-display');
+          hotkeyDisplay.textContent = `Current hotkey: ${invokeCommand.shortcut}`;
+          hotkeyDisplay.style.display = 'block';
+
+          const changeHotkeyButton = optionsRoot.getElementById('change-hotkey');
+          changeHotkeyButton.style.display = 'block';
+          changeHotkeyButton.addEventListener('click', () => {
+            chrome.runtime.sendMessage({ action: 'open_shortcut_page' });
+          });
+        }
       });
     }
 
@@ -416,13 +458,15 @@ function getEffectiveBackgroundColor(element) {
 
         const baseUrl = baseUrlEl().value.trim();
         const position = optionsRoot.querySelector('.position-option.active').dataset.value;
+        const invocation = optionsRoot.querySelector('.invoke-option.active').dataset.value;
 
         chrome.storage.local.set({ 
           api_provider: provider,
           api_keys: keys,
           api_models: models,
           api_base_url: baseUrl,
-          chat_window_position: position 
+          chat_window_position: position,
+          invocation_method: invocation
         }, () => {
           teardownCurrentPanel();
         });
@@ -1034,15 +1078,22 @@ function getEffectiveBackgroundColor(element) {
   // Start listening
   window.addEventListener('keydown', (e) => {
     if (!panelHost) {
-      if (!isTypingInEditable(e)) {
-      }
-      recordKey(e);
+      chrome.storage.local.get(['invocation_method'], (result) => {
+        const invocationMethod = result.invocation_method || 'typing-or-hotkey';
+        if (invocationMethod === 'hotkey') return;
+        
+        if (!isTypingInEditable(e)) {
+        }
+        recordKey(e);
+      });
     }
   }, true);
 
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "coflow_toggle_options") {
       toggleOptionsPanel();
+    } else if (request.action === "coflow_invoke_panel") {
+      injectPanel('');
     }
   });
 })();

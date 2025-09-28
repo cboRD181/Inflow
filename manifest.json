@@ -21,7 +21,8 @@
   },
   "permissions": [
     "storage",
-    "scripting"
+    "scripting",
+    "commands"
   ],
   "host_permissions": [
     "<all_urls>",
@@ -50,6 +51,15 @@
       ],
       "matches": ["<all_urls>"]
     }
-  ]
+  ],
+  "commands": {
+    "invoke-inflow": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+O",
+        "mac": "Command+Shift+O"
+      },
+      "description": "Invoke Inflow"
+    }
+  }
 }
 

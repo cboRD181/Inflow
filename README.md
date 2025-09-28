@@ -1,23 +1,12 @@
-# Inflow: A Chrome Extension for invoking an LLM with your context without breaking flow
+# Inflow
 
-Begin typing your question to open a chat with your current viewport as context, no hotkeys or buttons needed
+Seamlessly query an LLM on your current page context. Begin typing your question to open a chat with your current viewport as context.
 
-https://github.com/user-attachments/assets/3f8fd7e0-592b-43c6-84db-ad1651b11e5d
-
-## Install (Developer Mode)
-
-1. Get an API key from a supported provider (like `https://openrouter.ai`).
-2. Chrome → Extensions → Enable Developer mode → Load unpacked → select this folder.
-3. Click the extension icon → set your API provider and key.
-
-## Usage
-
-- Start typing a sentence on any page while no input is focused. An overlay appears.
-- The initial typed text pre-fills the question. Press Enter to send.
-- Close the panel with `Esc` or by clicking outside of it.
+Alternatively, use the configurable hotkey (`Cmd+Shift+O` or `Ctrl+Shift+O` by default) to invoke Inflow. You can configure this and other settings from the extension options. Click "Change Hotkey" in the settings panel to reconfigure.
 
 ## Features
 
+- **Seamless Invocation**: Start typing to invoke, or use a hotkey.
 - **Context-aware**: Automatically includes the current page's content in its queries.
 - **Adaptive UI**: The chat panel adapts its colors to match the current website's theme.
 - **Streaming Responses**: Get fast, real-time answers from the LLM.
