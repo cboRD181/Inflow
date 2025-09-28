@@ -1077,14 +1077,25 @@ function getEffectiveBackgroundColor(element) {
   }
 
   chrome.storage.local.get('invocation_method', (result) => {
-    if (result.invocation_method) {
-      invocationMethod = result.invocation_method;
+    try {
+      // Accessing chrome.runtime.id will throw an error if the context is invalidated.
+      const id = chrome.runtime.id;
+      if (result.invocation_method) {
+        invocationMethod = result.invocation_method;
+      }
+    } catch (e) {
+      // Context is invalidated, do nothing.
     }
   });
 
   chrome.storage.onChanged.addListener((changes, namespace) => {
-    if (namespace === 'local' && changes.invocation_method) {
-      invocationMethod = changes.invocation_method.newValue;
+    try {
+      const id = chrome.runtime.id;
+      if (namespace === 'local' && changes.invocation_method) {
+        invocationMethod = changes.invocation_method.newValue;
+      }
+    } catch (e) {
+      // Context is invalidated, do nothing.
     }
   });
 
