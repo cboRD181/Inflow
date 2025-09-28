@@ -1,6 +1,7 @@
 (() => {
   const WORD_WINDOW_MS = 1200; // time window for alphabetic word + space
 
+  let invocationMethod = 'typing-or-hotkey';
   let currentWord = "";
   let wordStartTs = 0;
   let panelHost = null; // container element in page DOM
@@ -1075,17 +1076,25 @@ function getEffectiveBackgroundColor(element) {
     }
   }
 
+  chrome.storage.local.get('invocation_method', (result) => {
+    if (result.invocation_method) {
+      invocationMethod = result.invocation_method;
+    }
+  });
+
+  chrome.storage.onChanged.addListener((changes, namespace) => {
+    if (namespace === 'local' && changes.invocation_method) {
+      invocationMethod = changes.invocation_method.newValue;
+    }
+  });
+
   // Start listening
   window.addEventListener('keydown', (e) => {
     if (!panelHost) {
-      chrome.storage.local.get(['invocation_method'], (result) => {
-        const invocationMethod = result.invocation_method || 'typing-or-hotkey';
-        if (invocationMethod === 'hotkey') return;
-        
-        if (!isTypingInEditable(e)) {
-        }
-        recordKey(e);
-      });
+      if (invocationMethod === 'hotkey') return;
+      if (!isTypingInEditable(e)) {
+      }
+      recordKey(e);
     }
   }, true);
 
